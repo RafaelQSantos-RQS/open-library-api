@@ -1,4 +1,4 @@
-package br.com.openlibrary.open_library.service;
+package br.com.openlibrary.open_library.service.subject_area;
 
 import br.com.openlibrary.open_library.dto.page.PageDTO;
 import br.com.openlibrary.open_library.dto.subject_area.SubjectAreaDTO;
@@ -15,8 +15,6 @@ public interface SubjectAreaService {
      * @return the created subject area
      */
     SubjectArea createSubjectArea(SubjectAreaDTO subjectAreaDTO);
-
-
     /**
      * Finds all subject areas in the database.
      *
@@ -24,7 +22,6 @@ public interface SubjectAreaService {
      * @return a page of all subject areas
      */
     PageDTO<SubjectArea> findAllSubjectAreas(Pageable pageable);
-
     /**
      * Finds a subject area by its ID.
      *
@@ -32,7 +29,6 @@ public interface SubjectAreaService {
      * @return an optional containing the subject area if found, otherwise an empty optional
      */
     Optional<SubjectArea> findSubjectAreaById(Long id);
-
     /**
      * Updates an existing subject area.
      *
@@ -42,7 +38,6 @@ public interface SubjectAreaService {
      *         otherwise an empty optional
      */
     Optional<SubjectArea> updateSubjectArea(Long id, SubjectAreaDTO subjectAreaDto);
-
     /**
      * Deletes a subject area by its ID.
      *

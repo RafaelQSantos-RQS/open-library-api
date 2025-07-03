@@ -3,7 +3,7 @@ package br.com.openlibrary.open_library.controller;
 import br.com.openlibrary.open_library.dto.page.PageDTO;
 import br.com.openlibrary.open_library.dto.subject_area.SubjectAreaDTO;
 import br.com.openlibrary.open_library.model.SubjectArea;
-import br.com.openlibrary.open_library.service.SubjectAreaService;
+import br.com.openlibrary.open_library.service.subject_area.SubjectAreaService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;

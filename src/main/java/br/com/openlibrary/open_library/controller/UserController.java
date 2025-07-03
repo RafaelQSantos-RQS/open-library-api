@@ -4,7 +4,7 @@ import br.com.openlibrary.open_library.dto.page.PageDTO;
 import br.com.openlibrary.open_library.dto.user.UserDTO;
 import br.com.openlibrary.open_library.dto.user.UserUpdateDTO;
 import br.com.openlibrary.open_library.model.User;
-import br.com.openlibrary.open_library.service.UserService;
+import br.com.openlibrary.open_library.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;

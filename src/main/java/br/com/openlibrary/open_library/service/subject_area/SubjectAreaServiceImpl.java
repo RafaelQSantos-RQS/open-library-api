@@ -1,4 +1,4 @@
-package br.com.openlibrary.open_library.service;
+package br.com.openlibrary.open_library.service.subject_area;
 
 import br.com.openlibrary.open_library.dto.page.PageDTO;
 import br.com.openlibrary.open_library.dto.subject_area.SubjectAreaDTO;

@@ -1,4 +1,4 @@
-package br.com.openlibrary.open_library.service;
+package br.com.openlibrary.open_library.service.user;
 
 import br.com.openlibrary.open_library.dto.page.PageDTO;
 import br.com.openlibrary.open_library.dto.user.UserDTO;
