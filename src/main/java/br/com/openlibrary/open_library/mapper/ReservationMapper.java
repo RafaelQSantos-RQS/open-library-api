@@ -1,6 +1,6 @@
 package br.com.openlibrary.open_library.mapper;
 
-import br.com.openlibrary.open_library.dto.reservation.ReservationResponseDTO;
+import br.com.openlibrary.open_library.dto.reservation.ReservationResponseDto;
 import br.com.openlibrary.open_library.model.Reservation;
 import org.mapstruct.Mapper;
 
@@ -8,10 +8,10 @@ import org.mapstruct.Mapper;
 public interface ReservationMapper {
 
     /**
-     * Converts a Reservation entity to a ReservationResponseDTO.
+     * Converts a Reservation entity to a ReservationResponseDto.
      *
      * @param reservation the Reservation entity to be converted
-     * @return the converted ReservationResponseDTO
+     * @return the converted ReservationResponseDto
      */
-    ReservationResponseDTO toResponseDto(Reservation reservation);
+    ReservationResponseDto toResponseDto(Reservation reservation);
 }

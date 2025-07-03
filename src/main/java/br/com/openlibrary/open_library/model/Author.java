@@ -11,17 +11,17 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "subject_area")
+@Table(name = "authors")
 @EntityListeners(AuditingEntityListener.class)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class SubjectArea {
+public class Author {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
-    @Column(name = "name", nullable = false, unique = true)
+    @Column(nullable = false, unique = true)
     private String name;
 
     @CreatedDate
@@ -32,7 +32,7 @@ public class SubjectArea {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    public SubjectArea(String name) {
+    public Author(String name) {
         this.name = name;
     }
 }

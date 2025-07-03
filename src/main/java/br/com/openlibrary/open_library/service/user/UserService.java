@@ -1,8 +1,8 @@
 package br.com.openlibrary.open_library.service.user;
 
-import br.com.openlibrary.open_library.dto.page.PageDTO;
-import br.com.openlibrary.open_library.dto.user.UserDTO;
-import br.com.openlibrary.open_library.dto.user.UserUpdateDTO;
+import br.com.openlibrary.open_library.dto.page.PageDto;
+import br.com.openlibrary.open_library.dto.user.UserDto;
+import br.com.openlibrary.open_library.dto.user.UserUpdateDto;
 import br.com.openlibrary.open_library.model.User;
 import org.springframework.data.domain.Pageable;
 
@@ -24,7 +24,7 @@ public interface UserService {
      * @param pageable the pagination object
      * @return a page of all users
      */
-    PageDTO<UserDTO> findAllUsers(Pageable pageable);
+    PageDto<UserDto> findAllUsers(Pageable pageable);
 
     /**
      * Finds a user by their id
@@ -41,18 +41,18 @@ public interface UserService {
      * @param userDTO the data transfer object containing updated user information
      * @return an optional containing the updated user if the user exists, otherwise an empty optional
      */
-    Optional<User> updateUser(Long id, UserUpdateDTO userDTO);
+    Optional<User> updateUser(Long id, UserUpdateDto userDTO);
 
     /**
      * Partially updates an existing user with new information. Only the fields that are
-     * present in the provided UserUpdateDTO are updated. If the user does not exist,
+     * present in the provided UserUpdateDto are updated. If the user does not exist,
      * an empty optional is returned.
      *
      * @param id        the ID of the user to be updated
      * @param userDTO   the data transfer object containing updated user information
      * @return an optional containing the updated user if the user exists, otherwise an empty optional
      */
-    Optional<User> partialUpdateUser(Long id, UserUpdateDTO userDTO);
+    Optional<User> partialUpdateUser(Long id, UserUpdateDto userDTO);
 
     boolean deleteUser(Long id);
 }

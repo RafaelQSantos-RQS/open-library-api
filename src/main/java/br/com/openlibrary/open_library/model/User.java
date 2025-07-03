@@ -42,4 +42,13 @@ public class User {
     @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    public User(String name, String registrationNumber, String course, String department, String phone, UserType userType) {
+        this.name = name;
+        this.registrationNumber = registrationNumber;
+        this.course = course;
+        this.department = department;
+        this.phoneNumber = phone;
+        this.userType = userType;
+    }
 }

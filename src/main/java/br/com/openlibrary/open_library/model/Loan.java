@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -39,4 +40,11 @@ public class Loan {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private LoanStatus status;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "originating_reservation_id", unique = true)
+    private Reservation reservation;
+
+    @Column(name = "fine_amount")
+    private BigDecimal fineAmount;
 }

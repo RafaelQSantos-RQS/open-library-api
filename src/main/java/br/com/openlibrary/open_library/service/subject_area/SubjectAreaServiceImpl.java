@@ -1,7 +1,7 @@
 package br.com.openlibrary.open_library.service.subject_area;
 
-import br.com.openlibrary.open_library.dto.page.PageDTO;
-import br.com.openlibrary.open_library.dto.subject_area.SubjectAreaDTO;
+import br.com.openlibrary.open_library.dto.page.PageDto;
+import br.com.openlibrary.open_library.dto.subject_area.SubjectAreaDto;
 import br.com.openlibrary.open_library.model.SubjectArea;
 import br.com.openlibrary.open_library.repository.SubjectAreaRepository;
 import jakarta.transaction.Transactional;
@@ -23,7 +23,7 @@ public class SubjectAreaServiceImpl implements SubjectAreaService {
 
     @Override
     @Transactional
-    public SubjectArea createSubjectArea(SubjectAreaDTO subjectAreaDTO) {
+    public SubjectArea createSubjectArea(SubjectAreaDto subjectAreaDTO) {
         if (subjectAreaRepository.existsByName(subjectAreaDTO.name())) {
             throw new IllegalArgumentException("Subject area with name " + subjectAreaDTO.name() + " already exists.");
         }
@@ -33,9 +33,9 @@ public class SubjectAreaServiceImpl implements SubjectAreaService {
     }
 
     @Override
-    public PageDTO<SubjectArea> findAllSubjectAreas(Pageable pageable) {
+    public PageDto<SubjectArea> findAllSubjectAreas(Pageable pageable) {
         Page<SubjectArea> areas = subjectAreaRepository.findAll(pageable);
-        return new PageDTO<>(
+        return new PageDto<>(
                 areas.getContent(),
                 areas.getNumber(),
                 areas.getSize(),
@@ -51,7 +51,7 @@ public class SubjectAreaServiceImpl implements SubjectAreaService {
 
     @Override
     @Transactional
-    public Optional<SubjectArea> updateSubjectArea(Long id, SubjectAreaDTO subjectAreaDto) {
+    public Optional<SubjectArea> updateSubjectArea(Long id, SubjectAreaDto subjectAreaDto) {
         return subjectAreaRepository.findById(id)
                 .map(subjectArea -> {
                     subjectArea.setName(subjectAreaDto.name());

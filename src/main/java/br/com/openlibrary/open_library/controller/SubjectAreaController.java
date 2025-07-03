@@ -1,7 +1,7 @@
 package br.com.openlibrary.open_library.controller;
 
-import br.com.openlibrary.open_library.dto.page.PageDTO;
-import br.com.openlibrary.open_library.dto.subject_area.SubjectAreaDTO;
+import br.com.openlibrary.open_library.dto.page.PageDto;
+import br.com.openlibrary.open_library.dto.subject_area.SubjectAreaDto;
 import br.com.openlibrary.open_library.model.SubjectArea;
 import br.com.openlibrary.open_library.service.subject_area.SubjectAreaService;
 import jakarta.validation.Valid;
@@ -24,7 +24,7 @@ public class SubjectAreaController {
     }
 
     @PostMapping
-    public ResponseEntity<SubjectArea> createSubjectArea(@Valid @RequestBody SubjectAreaDTO subjectAreaDTO) {
+    public ResponseEntity<SubjectArea> createSubjectArea(@Valid @RequestBody SubjectAreaDto subjectAreaDTO) {
         SubjectArea subjectArea = subjectAreaService.createSubjectArea(subjectAreaDTO);
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -35,8 +35,8 @@ public class SubjectAreaController {
     }
 
     @GetMapping
-    public ResponseEntity<PageDTO<SubjectArea>> getAllSubjectAreas(Pageable pageable) {
-        PageDTO<SubjectArea> areasDto = subjectAreaService.findAllSubjectAreas(pageable);
+    public ResponseEntity<PageDto<SubjectArea>> getAllSubjectAreas(Pageable pageable) {
+        PageDto<SubjectArea> areasDto = subjectAreaService.findAllSubjectAreas(pageable);
         return ResponseEntity.ok(areasDto);
     }
 
@@ -48,7 +48,7 @@ public class SubjectAreaController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<SubjectArea> updateSubjectArea(@PathVariable Long id, @Valid @RequestBody SubjectAreaDTO subjectAreaDto) {
+    public ResponseEntity<SubjectArea> updateSubjectArea(@PathVariable Long id, @Valid @RequestBody SubjectAreaDto subjectAreaDto) {
         return subjectAreaService.updateSubjectArea(id, subjectAreaDto)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());

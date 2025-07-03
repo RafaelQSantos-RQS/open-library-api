@@ -1,8 +1,8 @@
 package br.com.openlibrary.open_library.service.user;
 
-import br.com.openlibrary.open_library.dto.page.PageDTO;
-import br.com.openlibrary.open_library.dto.user.UserDTO;
-import br.com.openlibrary.open_library.dto.user.UserUpdateDTO;
+import br.com.openlibrary.open_library.dto.page.PageDto;
+import br.com.openlibrary.open_library.dto.user.UserDto;
+import br.com.openlibrary.open_library.dto.user.UserUpdateDto;
 import br.com.openlibrary.open_library.mapper.UserMapper;
 import br.com.openlibrary.open_library.model.User;
 import br.com.openlibrary.open_library.repository.UserRepository;
@@ -33,15 +33,15 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public PageDTO<UserDTO> findAllUsers(Pageable pageable) {
+    public PageDto<UserDto> findAllUsers(Pageable pageable) {
         Page<User> userPage = userRepository.findAll(pageable);
 
-        List<UserDTO> userDTOS = userPage.getContent().stream()
+        List<UserDto> userDtos = userPage.getContent().stream()
                 .map(userMapper::toUserDTO)
                 .toList();
 
-        return new PageDTO<>(
-                userDTOS,
+        return new PageDto<>(
+                userDtos,
                 userPage.getNumber(),
                 userPage.getSize(),
                 userPage.getTotalElements(),
@@ -56,7 +56,7 @@ public class UserServiceImpl implements UserService{
 
     @Override
     @Transactional
-    public Optional<User> updateUser(Long id, UserUpdateDTO userDTO) {
+    public Optional<User> updateUser(Long id, UserUpdateDto userDTO) {
         return userRepository.findById(id)
                 .map(existingUser -> {
                     existingUser.setName(userDTO.name());
@@ -71,7 +71,7 @@ public class UserServiceImpl implements UserService{
 
     @Override
     @Transactional
-    public Optional<User> partialUpdateUser(Long id, UserUpdateDTO userDTO) {
+    public Optional<User> partialUpdateUser(Long id, UserUpdateDto userDTO) {
         return userRepository.findById(id)
                 .map(existingUser -> {
                     userMapper.partialUpdate(existingUser, userDTO);

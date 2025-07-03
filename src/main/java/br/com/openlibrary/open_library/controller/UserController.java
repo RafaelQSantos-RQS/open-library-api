@@ -1,9 +1,9 @@
 package br.com.openlibrary.open_library.controller;
 
-import br.com.openlibrary.open_library.dto.loan.LoanHistoryItemDTO;
-import br.com.openlibrary.open_library.dto.page.PageDTO;
-import br.com.openlibrary.open_library.dto.user.UserDTO;
-import br.com.openlibrary.open_library.dto.user.UserUpdateDTO;
+import br.com.openlibrary.open_library.dto.loan.LoanHistoryItemDto;
+import br.com.openlibrary.open_library.dto.page.PageDto;
+import br.com.openlibrary.open_library.dto.user.UserDto;
+import br.com.openlibrary.open_library.dto.user.UserUpdateDto;
 import br.com.openlibrary.open_library.model.User;
 import br.com.openlibrary.open_library.service.loan.LoanService;
 import br.com.openlibrary.open_library.service.user.UserService;
@@ -42,7 +42,7 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<PageDTO<UserDTO>> getAllUsers(Pageable pageable) {
+    public ResponseEntity<PageDto<UserDto>> getAllUsers(Pageable pageable) {
         return ResponseEntity.ok(userService.findAllUsers(pageable));
     }
 
@@ -54,14 +54,14 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody UserUpdateDTO userUpdateDTO) {
+    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody UserUpdateDto userUpdateDTO) {
         return userService.updateUser(id,userUpdateDTO)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<User> updateUserPartial(@PathVariable Long id, @RequestBody UserUpdateDTO userUpdateDTO) {
+    public ResponseEntity<User> updateUserPartial(@PathVariable Long id, @RequestBody UserUpdateDto userUpdateDTO) {
         return userService.partialUpdateUser(id,userUpdateDTO)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -78,7 +78,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/loans")
-    public ResponseEntity<PageDTO<LoanHistoryItemDTO>> getLoansByUserId(
+    public ResponseEntity<PageDto<LoanHistoryItemDto>> getLoansByUserId(
             @PathVariable Long userId,
             Pageable pageable) {
         return ResponseEntity.ok(loanService.findLoansByUserId(userId, pageable));

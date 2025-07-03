@@ -1,19 +1,14 @@
 package br.com.openlibrary.open_library.service.loan;
 
-import br.com.openlibrary.open_library.dto.loan.LoanCreateDTO;
-import br.com.openlibrary.open_library.dto.loan.LoanHistoryItemDTO;
-import br.com.openlibrary.open_library.dto.loan.LoanResponseDTO;
-import br.com.openlibrary.open_library.dto.page.PageDTO;
+import br.com.openlibrary.open_library.dto.loan.LoanCreateDto;
+import br.com.openlibrary.open_library.dto.loan.LoanHistoryItemDto;
+import br.com.openlibrary.open_library.dto.loan.LoanResponseDto;
+import br.com.openlibrary.open_library.dto.page.PageDto;
 import br.com.openlibrary.open_library.mapper.LoanMapper;
 import br.com.openlibrary.open_library.model.*;
-import br.com.openlibrary.open_library.repository.ItemRepository;
-import br.com.openlibrary.open_library.repository.LoanRepository;
-import br.com.openlibrary.open_library.repository.ReservationRepository;
-import br.com.openlibrary.open_library.repository.UserRepository;
+import br.com.openlibrary.open_library.repository.*;
+import br.com.openlibrary.open_library.service.fine_policy.FinePolicyService;
 import br.com.openlibrary.open_library.service.strategy.due_date.DueDateStrategy;
-import br.com.openlibrary.open_library.service.strategy.due_date.EmployeeDueDateStrategy;
-import br.com.openlibrary.open_library.service.strategy.due_date.StudentDueDateStrategy;
-import br.com.openlibrary.open_library.service.strategy.due_date.TeacherDueDateStrategy;
 import br.com.openlibrary.open_library.service.strategy.loan_limit.LoanLimitStrategy;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -23,7 +18,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,6 +30,7 @@ public class LoanServiceImpl implements LoanService {
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
     private final ReservationRepository reservationRepository;
+    private final FinePolicyService finePolicyService;
     private final LoanMapper loanMapper;
     private final DueDateStrategy studentDueDateStrategy;
     private final DueDateStrategy teacherDueDateStrategy;
@@ -45,11 +43,12 @@ public class LoanServiceImpl implements LoanService {
     public LoanServiceImpl(LoanRepository loanRepository,
                            UserRepository userRepository,
                            ItemRepository itemRepository,
+                           FinePolicyService finePolicyService,
                            LoanMapper loanMapper,
                            ReservationRepository reservationRepository,
-                           @Qualifier("studentStrategy") StudentDueDateStrategy studentDueDateStrategy,
-                           @Qualifier("teacherStrategy") TeacherDueDateStrategy teacherDueDateStrategy,
-                           @Qualifier("employeeStrategy") EmployeeDueDateStrategy employeeDueDateStrategy,
+                           @Qualifier("studentStrategy") DueDateStrategy studentDueDateStrategy,
+                           @Qualifier("teacherStrategy") DueDateStrategy teacherDueDateStrategy,
+                           @Qualifier("employeeStrategy") DueDateStrategy employeeDueDateStrategy,
                            @Qualifier("studentLoanLimitStrategy") LoanLimitStrategy studentLoanLimitStrategy,
                            @Qualifier("teacherLoanLimitStrategy") LoanLimitStrategy teacherLoanLimitStrategy,
                            @Qualifier("employeeLoanLimitStrategy") LoanLimitStrategy employeeLoanLimitStrategy) {
@@ -57,6 +56,7 @@ public class LoanServiceImpl implements LoanService {
         this.userRepository = userRepository;
         this.itemRepository = itemRepository;
         this.reservationRepository = reservationRepository;
+        this.finePolicyService = finePolicyService;
         this.loanMapper = loanMapper;
         this.studentDueDateStrategy = studentDueDateStrategy;
         this.teacherDueDateStrategy = teacherDueDateStrategy;
@@ -68,7 +68,7 @@ public class LoanServiceImpl implements LoanService {
 
     @Override
     @Transactional
-    public LoanResponseDTO createLoan(LoanCreateDTO loanCreateDTO) {
+    public LoanResponseDto createLoan(LoanCreateDto loanCreateDTO) {
         // Search for user and item
         User user = userRepository.findById(loanCreateDTO.userId())
                 .orElseThrow(() -> new EntityNotFoundException("User not found! Please check the user id."));
@@ -102,13 +102,7 @@ public class LoanServiceImpl implements LoanService {
         selectedLimitStrategy.verifyLimit(activeLoanCount);
 
         // Calculate due date
-        DueDateStrategy selectedStrategy;
-        switch (user.getUserType()) { // Select strategy based on user type
-            case STUDENT -> selectedStrategy = studentDueDateStrategy;
-            case TEACHER -> selectedStrategy = teacherDueDateStrategy;
-            case EMPLOYEE -> selectedStrategy = employeeDueDateStrategy;
-            default -> throw new IllegalArgumentException("User type not supported!");
-        }
+        DueDateStrategy selectedStrategy = getDueDateStrategy(user);
         LocalDate dueDate = selectedStrategy.calculateDueDate(LocalDate.now(),item);
 
         // Create loan Entity
@@ -147,7 +141,7 @@ public class LoanServiceImpl implements LoanService {
 
     @Override
     @Transactional
-    public LoanResponseDTO returnLoan(Long loanId) {
+    public LoanResponseDto returnLoan(Long loanId) {
         // Search for loan
         Loan loan = loanRepository.findById(loanId)
                 .orElseThrow(() -> new EntityNotFoundException("Loan not found! Please check the loan id."));
@@ -155,6 +149,17 @@ public class LoanServiceImpl implements LoanService {
         // Check if loan is already returned
         if (loan.getStatus() == LoanStatus.RETURNED)
             throw new IllegalStateException("Loan is already returned!");
+
+        // Calculate fine
+        LocalDate returnDate = LocalDate.now();
+        if (returnDate.isAfter(loan.getDueDate())) {
+            long daysOverdue = ChronoUnit.DAYS.between(loan.getDueDate(), returnDate);
+
+            BigDecimal finePerDay = finePolicyService.getCurrentFineAmountPerDay();
+
+            BigDecimal totalFine = finePerDay.multiply(new BigDecimal(daysOverdue));
+            loan.setFineAmount(totalFine);
+        }
 
         // Update loan
         loan.setStatus(LoanStatus.RETURNED);
@@ -172,19 +177,19 @@ public class LoanServiceImpl implements LoanService {
     }
 
     @Override
-    public PageDTO<LoanHistoryItemDTO> findLoansByUserId(Long userId, Pageable pageable) {
+    public PageDto<LoanHistoryItemDto> findLoansByUserId(Long userId, Pageable pageable) {
         if (!userRepository.existsById(userId))
             throw new EntityNotFoundException("User not found! Please check the user id.");
 
         Page<Loan> loanPage = loanRepository.findByUserId(userId, pageable);
 
-        List<LoanHistoryItemDTO> historyItemDTOS = loanPage
+        List<LoanHistoryItemDto> historyItemDTOS = loanPage
                 .getContent()
                 .stream()
                 .map(loanMapper::toHistoryItemDto)
                 .toList();
 
-        return new PageDTO<>(
+        return new PageDto<>(
                 historyItemDTOS,
                 loanPage.getNumber(),
                 loanPage.getSize(),
@@ -194,7 +199,7 @@ public class LoanServiceImpl implements LoanService {
     }
 
     @Override
-    public Optional<LoanResponseDTO> renewLoan(Long loanId) {
+    public Optional<LoanResponseDto> renewLoan(Long loanId) {
         return loanRepository.findById(loanId)
                 .map(loan -> {
                     if (loan.getStatus() != LoanStatus.ACTIVE)
@@ -204,13 +209,7 @@ public class LoanServiceImpl implements LoanService {
                     if (activeReservationCount > 0)
                         throw new IllegalStateException("Loan cannot be renewed because there is an active reservation for this item.");
 
-                    DueDateStrategy selectedStrategy;
-                    switch (loan.getUser().getUserType()) { // Select strategy based on user type
-                        case STUDENT -> selectedStrategy = studentDueDateStrategy;
-                        case TEACHER -> selectedStrategy = teacherDueDateStrategy;
-                        case EMPLOYEE -> selectedStrategy = employeeDueDateStrategy;
-                        default -> throw new IllegalArgumentException("User type not supported!");
-                    }
+                    DueDateStrategy selectedStrategy = getDueDateStrategy(loan.getUser());
 
                     LocalDate newDueDate = selectedStrategy.calculateDueDate(LocalDate.now(),loan.getItem());
                     loan.setDueDate(newDueDate);
@@ -218,5 +217,16 @@ public class LoanServiceImpl implements LoanService {
                     Loan savedLoan = loanRepository.save(loan);
                     return loanMapper.toResponseDto(savedLoan);
                 });
+    }
+
+    private DueDateStrategy getDueDateStrategy(User loan) {
+        DueDateStrategy selectedStrategy;
+        switch (loan.getUserType()) {
+            case STUDENT -> selectedStrategy = studentDueDateStrategy;
+            case TEACHER -> selectedStrategy = teacherDueDateStrategy;
+            case EMPLOYEE -> selectedStrategy = employeeDueDateStrategy;
+            default -> throw new IllegalArgumentException("User type not supported!");
+        }
+        return selectedStrategy;
     }
 }

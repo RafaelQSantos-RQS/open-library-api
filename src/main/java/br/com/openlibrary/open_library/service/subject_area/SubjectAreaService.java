@@ -1,7 +1,7 @@
 package br.com.openlibrary.open_library.service.subject_area;
 
-import br.com.openlibrary.open_library.dto.page.PageDTO;
-import br.com.openlibrary.open_library.dto.subject_area.SubjectAreaDTO;
+import br.com.openlibrary.open_library.dto.page.PageDto;
+import br.com.openlibrary.open_library.dto.subject_area.SubjectAreaDto;
 import br.com.openlibrary.open_library.model.SubjectArea;
 import org.springframework.data.domain.Pageable;
 
@@ -14,14 +14,14 @@ public interface SubjectAreaService {
      * @param subjectAreaDTO the subject area to be created
      * @return the created subject area
      */
-    SubjectArea createSubjectArea(SubjectAreaDTO subjectAreaDTO);
+    SubjectArea createSubjectArea(SubjectAreaDto subjectAreaDTO);
     /**
      * Finds all subject areas in the database.
      *
      * @param pageable the pagination object
      * @return a page of all subject areas
      */
-    PageDTO<SubjectArea> findAllSubjectAreas(Pageable pageable);
+    PageDto<SubjectArea> findAllSubjectAreas(Pageable pageable);
     /**
      * Finds a subject area by its ID.
      *
@@ -37,7 +37,7 @@ public interface SubjectAreaService {
      * @return an optional containing the updated subject area if the subject area exists,
      *         otherwise an empty optional
      */
-    Optional<SubjectArea> updateSubjectArea(Long id, SubjectAreaDTO subjectAreaDto);
+    Optional<SubjectArea> updateSubjectArea(Long id, SubjectAreaDto subjectAreaDto);
     /**
      * Deletes a subject area by its ID.
      *

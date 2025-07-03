@@ -9,6 +9,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "items")
@@ -23,7 +25,11 @@ public class Item {
 
     private String title;
 
-    private String author;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "item_authors",
+            joinColumns = @JoinColumn(name = "item_id"),
+            inverseJoinColumns = @JoinColumn(name = "author_id"))
+    private Set<Author> authors = new HashSet<>();
 
     @Enumerated(EnumType.STRING)
     @Column(name = "item_type", nullable = false)
@@ -46,4 +52,13 @@ public class Item {
     @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    public Item(String title, Set<Author> authors, ItemType itemType, SubjectArea subjectArea, int totalQuantity, int availableQuantity) {
+        this.title = title;
+        this.authors = authors;
+        this.itemType = itemType;
+        this.subjectArea = subjectArea;
+        this.totalQuantity = totalQuantity;
+        this.availableQuantity = availableQuantity;
+    }
 }
