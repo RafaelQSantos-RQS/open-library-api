@@ -1,7 +1,6 @@
 package br.com.openlibrary.open_library.controller;
 
 import br.com.openlibrary.open_library.dto.loan.LoanHistoryItemDTO;
-import br.com.openlibrary.open_library.dto.loan.LoanResponseDTO;
 import br.com.openlibrary.open_library.dto.page.PageDTO;
 import br.com.openlibrary.open_library.dto.user.UserDTO;
 import br.com.openlibrary.open_library.dto.user.UserUpdateDTO;
