@@ -200,7 +200,6 @@ public class LoanServiceImpl implements LoanService {
                     if (loan.getStatus() != LoanStatus.ACTIVE)
                         throw new IllegalStateException("Loan cannot be renewed because its status is not ACTIVE.");
 
-                    // TODO: Implementar a verificação de reserva aqui quando a funcionalidade existir.
                     long activeReservationCount = reservationRepository.countByItemAndStatus(loan.getItem(), ReservationStatus.ACTIVE);
                     if (activeReservationCount > 0)
                         throw new IllegalStateException("Loan cannot be renewed because there is an active reservation for this item.");

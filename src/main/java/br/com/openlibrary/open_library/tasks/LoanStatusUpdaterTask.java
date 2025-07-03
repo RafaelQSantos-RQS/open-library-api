@@ -25,14 +25,17 @@ public class LoanStatusUpdaterTask {
      * Scheduled job that updates the status of overdue loans daily at 00:05.
      * This task logs the start and completion of the update process.
      */
-    @Scheduled(cron = "0 5 0 * * *") // Run every day at 00:05
+    @Scheduled(cron = "0 5 0 * * *")
     public void updateOverdueLoanStatusJob() {
         log.info("Scheduled Task Started: Updating overdue loan statuses at {}", LocalDateTime.now());
         loanService.updateOverdueLoansStatus();
         log.info("Scheduled Task Finished: Overdue loan statuses updated successfully.");
     }
-
-    @Scheduled(cron = "0 15 0 * * *") // Todo dia, à meia-noite e quinze
+    /**
+     * Scheduled job that expires old reservations daily at 00:15.
+     * This task logs the start and completion of the reservation expiration process.
+     */
+    @Scheduled(cron = "0 15 0 * * *")
     public void expireOldReservationsJob() {
         log.info("Scheduled Task Started: Expiring old reservations...");
         reservationService.expireOldReservations();
