@@ -12,7 +12,7 @@ import br.com.openlibrary.open_library.repository.ItemRepository;
 import br.com.openlibrary.open_library.repository.SubjectAreaRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -21,12 +21,18 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@AllArgsConstructor
 public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
     private final SubjectAreaRepository subjectAreaRepository;
     private final ItemMapper itemMapper;
+
+    @Autowired
+    public ItemServiceImpl(ItemRepository itemRepository, SubjectAreaRepository subjectAreaRepository, ItemMapper itemMapper) {
+        this.itemRepository = itemRepository;
+        this.subjectAreaRepository = subjectAreaRepository;
+        this.itemMapper = itemMapper;
+    }
 
     @Override
     @Transactional
