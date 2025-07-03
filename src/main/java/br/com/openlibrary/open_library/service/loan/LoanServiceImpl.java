@@ -1,14 +1,14 @@
 package br.com.openlibrary.open_library.service.loan;
 
 import br.com.openlibrary.open_library.dto.loan.LoanCreateDTO;
+import br.com.openlibrary.open_library.dto.loan.LoanHistoryItemDTO;
 import br.com.openlibrary.open_library.dto.loan.LoanResponseDTO;
+import br.com.openlibrary.open_library.dto.page.PageDTO;
 import br.com.openlibrary.open_library.mapper.LoanMapper;
-import br.com.openlibrary.open_library.model.Item;
-import br.com.openlibrary.open_library.model.Loan;
-import br.com.openlibrary.open_library.model.LoanStatus;
-import br.com.openlibrary.open_library.model.User;
+import br.com.openlibrary.open_library.model.*;
 import br.com.openlibrary.open_library.repository.ItemRepository;
 import br.com.openlibrary.open_library.repository.LoanRepository;
+import br.com.openlibrary.open_library.repository.ReservationRepository;
 import br.com.openlibrary.open_library.repository.UserRepository;
 import br.com.openlibrary.open_library.service.strategy.due_date.DueDateStrategy;
 import br.com.openlibrary.open_library.service.strategy.due_date.EmployeeDueDateStrategy;
@@ -17,17 +17,22 @@ import br.com.openlibrary.open_library.service.strategy.due_date.TeacherDueDateS
 import br.com.openlibrary.open_library.service.strategy.loan_limit.LoanLimitStrategy;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class LoanServiceImpl implements LoanService {
     private final LoanRepository loanRepository;
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
+    private final ReservationRepository reservationRepository;
     private final LoanMapper loanMapper;
     private final DueDateStrategy studentDueDateStrategy;
     private final DueDateStrategy teacherDueDateStrategy;
@@ -36,10 +41,12 @@ public class LoanServiceImpl implements LoanService {
     private final LoanLimitStrategy teacherLoanLimitStrategy;
     private final LoanLimitStrategy employeeLoanLimitStrategy;
 
+    @Autowired
     public LoanServiceImpl(LoanRepository loanRepository,
                            UserRepository userRepository,
                            ItemRepository itemRepository,
                            LoanMapper loanMapper,
+                           ReservationRepository reservationRepository,
                            @Qualifier("studentStrategy") StudentDueDateStrategy studentDueDateStrategy,
                            @Qualifier("teacherStrategy") TeacherDueDateStrategy teacherDueDateStrategy,
                            @Qualifier("employeeStrategy") EmployeeDueDateStrategy employeeDueDateStrategy,
@@ -49,6 +56,7 @@ public class LoanServiceImpl implements LoanService {
         this.loanRepository = loanRepository;
         this.userRepository = userRepository;
         this.itemRepository = itemRepository;
+        this.reservationRepository = reservationRepository;
         this.loanMapper = loanMapper;
         this.studentDueDateStrategy = studentDueDateStrategy;
         this.teacherDueDateStrategy = teacherDueDateStrategy;
@@ -79,7 +87,7 @@ public class LoanServiceImpl implements LoanService {
             throw new IllegalStateException("User has an overdue loan!");
 
         // Item is not available to loan
-        if (item.getAvailableQuantity() < 0)
+        if (item.getAvailableQuantity() < 1)
             throw new IllegalArgumentException("No more items available for loan!");
 
         // User has reached the maximum loan limit
@@ -161,5 +169,55 @@ public class LoanServiceImpl implements LoanService {
         itemRepository.save(item);
 
         return loanMapper.toResponseDto(savedLoan);
+    }
+
+    @Override
+    public PageDTO<LoanHistoryItemDTO> findLoansByUserId(Long userId, Pageable pageable) {
+        if (!userRepository.existsById(userId))
+            throw new EntityNotFoundException("User not found! Please check the user id.");
+
+        Page<Loan> loanPage = loanRepository.findByUserId(userId, pageable);
+
+        List<LoanHistoryItemDTO> historyItemDTOS = loanPage
+                .getContent()
+                .stream()
+                .map(loanMapper::toHistoryItemDto)
+                .toList();
+
+        return new PageDTO<>(
+                historyItemDTOS,
+                loanPage.getNumber(),
+                loanPage.getSize(),
+                loanPage.getTotalElements(),
+                loanPage.getTotalPages()
+        );
+    }
+
+    @Override
+    public Optional<LoanResponseDTO> renewLoan(Long loanId) {
+        return loanRepository.findById(loanId)
+                .map(loan -> {
+                    if (loan.getStatus() != LoanStatus.ACTIVE)
+                        throw new IllegalStateException("Loan cannot be renewed because its status is not ACTIVE.");
+
+                    // TODO: Implementar a verificação de reserva aqui quando a funcionalidade existir.
+                    long activeReservationCount = reservationRepository.countByItemAndStatus(loan.getItem(), ReservationStatus.ACTIVE);
+                    if (activeReservationCount > 0)
+                        throw new IllegalStateException("Loan cannot be renewed because there is an active reservation for this item.");
+
+                    DueDateStrategy selectedStrategy;
+                    switch (loan.getUser().getUserType()) { // Select strategy based on user type
+                        case STUDENT -> selectedStrategy = studentDueDateStrategy;
+                        case TEACHER -> selectedStrategy = teacherDueDateStrategy;
+                        case EMPLOYEE -> selectedStrategy = employeeDueDateStrategy;
+                        default -> throw new IllegalArgumentException("User type not supported!");
+                    }
+
+                    LocalDate newDueDate = selectedStrategy.calculateDueDate(LocalDate.now(),loan.getItem());
+                    loan.setDueDate(newDueDate);
+
+                    Loan savedLoan = loanRepository.save(loan);
+                    return loanMapper.toResponseDto(savedLoan);
+                });
     }
 }

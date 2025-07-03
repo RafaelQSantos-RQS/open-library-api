@@ -1,6 +1,7 @@
 package br.com.openlibrary.open_library.tasks;
 
 import br.com.openlibrary.open_library.service.loan.LoanService;
+import br.com.openlibrary.open_library.service.reservation.ReservationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -13,8 +14,10 @@ public class LoanStatusUpdaterTask {
     private static final Logger log = LoggerFactory.getLogger(LoanStatusUpdaterTask.class);
 
     private final LoanService loanService;
+    private final ReservationService reservationService;
 
-    public LoanStatusUpdaterTask(LoanService loanService) {
+    public LoanStatusUpdaterTask(LoanService loanService, ReservationService reservationService) {
+        this.reservationService = reservationService;
         this.loanService = loanService;
     }
 
@@ -28,4 +31,12 @@ public class LoanStatusUpdaterTask {
         loanService.updateOverdueLoansStatus();
         log.info("Scheduled Task Finished: Overdue loan statuses updated successfully.");
     }
+
+    @Scheduled(cron = "0 15 0 * * *") // Todo dia, à meia-noite e quinze
+    public void expireOldReservationsJob() {
+        log.info("Scheduled Task Started: Expiring old reservations...");
+        reservationService.expireOldReservations();
+        log.info("Scheduled Task Finished: Old reservations expired.");
+    } // Run every day at 00:00
+
 }

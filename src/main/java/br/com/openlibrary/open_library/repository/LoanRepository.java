@@ -4,6 +4,8 @@ import br.com.openlibrary.open_library.model.Item;
 import br.com.openlibrary.open_library.model.Loan;
 import br.com.openlibrary.open_library.model.LoanStatus;
 import br.com.openlibrary.open_library.model.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -49,4 +51,12 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
      * @return the list of {@link Loan}
      */
     List<Loan> findAllByStatusAndDueDateBefore(LoanStatus status, LocalDate today);
+    /**
+     * Retrieves a paginated list of {@link Loan} associated with the specified user ID.
+     *
+     * @param userId   the ID of the user whose loans are to be retrieved
+     * @param pageable the pagination information
+     * @return a page of {@link Loan} for the specified user
+     */
+    Page<Loan> findByUserId(Long userId, Pageable pageable);
 }

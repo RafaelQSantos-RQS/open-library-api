@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/loans")
@@ -33,5 +34,13 @@ public class LoanController {
     public ResponseEntity<LoanResponseDTO> returnLoan(@PathVariable Long id) {
         LoanResponseDTO loanResponseDTO = loanService.returnLoan(id);
         return ResponseEntity.ok(loanResponseDTO);
+    }
+
+    @PostMapping("/{id}/renew")
+    public ResponseEntity<LoanResponseDTO> renewLoan(@PathVariable Long id) {
+        Optional<LoanResponseDTO> loanResponseDTO = loanService.renewLoan(id);
+        return loanResponseDTO
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }

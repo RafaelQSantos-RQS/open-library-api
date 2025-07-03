@@ -1,9 +1,12 @@
 package br.com.openlibrary.open_library.controller;
 
+import br.com.openlibrary.open_library.dto.loan.LoanHistoryItemDTO;
+import br.com.openlibrary.open_library.dto.loan.LoanResponseDTO;
 import br.com.openlibrary.open_library.dto.page.PageDTO;
 import br.com.openlibrary.open_library.dto.user.UserDTO;
 import br.com.openlibrary.open_library.dto.user.UserUpdateDTO;
 import br.com.openlibrary.open_library.model.User;
+import br.com.openlibrary.open_library.service.loan.LoanService;
 import br.com.openlibrary.open_library.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -18,10 +21,12 @@ import java.net.URI;
 public class UserController {
 
     private final UserService userService;
+    private final LoanService loanService;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, LoanService loanService) {
         this.userService = userService;
+        this.loanService = loanService;
     }
 
     @PostMapping
@@ -71,5 +76,12 @@ public class UserController {
         } else {
             return ResponseEntity.notFound().build(); // 404
         }
+    }
+
+    @GetMapping("/{userId}/loans")
+    public ResponseEntity<PageDTO<LoanHistoryItemDTO>> getLoansByUserId(
+            @PathVariable Long userId,
+            Pageable pageable) {
+        return ResponseEntity.ok(loanService.findLoansByUserId(userId, pageable));
     }
 }

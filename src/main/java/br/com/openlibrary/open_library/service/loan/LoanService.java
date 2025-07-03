@@ -1,8 +1,13 @@
 package br.com.openlibrary.open_library.service.loan;
 
 import br.com.openlibrary.open_library.dto.loan.LoanCreateDTO;
+import br.com.openlibrary.open_library.dto.loan.LoanHistoryItemDTO;
 import br.com.openlibrary.open_library.dto.loan.LoanResponseDTO;
+import br.com.openlibrary.open_library.dto.page.PageDTO;
 import br.com.openlibrary.open_library.model.LoanStatus;
+import org.springframework.data.domain.Pageable;
+
+import java.util.Optional;
 
 public interface LoanService {
     /**
@@ -29,4 +34,24 @@ public interface LoanService {
      * @throws IllegalArgumentException if the loan with the specified id is not found.
      */
     LoanResponseDTO returnLoan(Long id);
+    /**
+     * Retrieves a page of {@link LoanResponseDTO} containing the details of all
+     * loans of the user with the specified id.
+     *
+     * @param userId the unique identifier of the user whose loans will be
+     *               retrieved.
+     * @param pageable the pagination details.
+     * @return a PageDTO containing the requested page of LoanResponseDTOs.
+     */
+    PageDTO<LoanHistoryItemDTO> findLoansByUserId(Long userId, Pageable pageable);
+    /**
+     * Renews a loan, given its unique identifier. This method will update the
+     * Loan entity and return a LoanResponseDTO with the renewed Loan data.
+     *
+     * @param loanId the unique identifier of the loan to be renewed.
+     * @return an Optional containing a LoanResponseDTO with the renewed Loan
+     * data if the loan was found and renewed, or an empty Optional if the loan
+     * with the specified id is not found.
+     */
+    Optional<LoanResponseDTO> renewLoan(Long loanId);
 }
